@@ -1,0 +1,22 @@
+{
+    "appKeys": {
+        "STOPID": 0
+    },
+    "capabilities": [
+        ""
+    ],
+    "companyName": "ashish81394@gmail.com",
+    "longName": "CUMTD",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "sdkVersion": "2",
+    "shortName": "CUMTD",
+    "uuid": "0e2309f1-0773-4c0d-b23e-dfeab2be8477",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
