@@ -103,18 +103,35 @@ function getTimes(stop) {
               console.log("output: " + output);
              //callback(this.responseText);
               var len = output.departures.length;
+              var headsign = "";
+              //var expected_min = "";
               for (var i = 0; i < len; i++) {
-                var headsign = output.departures[i].headsign;
+                
                 var expected_min = output.departures[i].expected_mins;
+                if(expected_min == "0") {
+                  expected_min = "DUE";
+                }
+                else {
+                  expected_min = expected_min + " min";
+                }
+                headsign = headsign + "[" + output.departures[i].headsign + ";" + expected_min + "]";
                 console.log("headsign: " + headsign);
                 console.log("expected_min: " + expected_min);
-                var dictionary = {
-                  "KEY_HEADSIGN": headsign,
-                  "KEY_EXPECTED": expected_min
-                };
-          
-                Pebble.sendAppMessage(dictionary);
+//                 var dictionary = {
+//                   "KEY_HEADSIGN": headsign,
+//                   "KEY_EXPECTED": expected_min
+//                 };
               }
+              var dictionary = {
+                "KEY_HEADSIGN": headsign
+              };
+              Pebble.sendAppMessage(dictionary,
+                  function(e) {
+                    console.log("Weather info sent to Pebble successfully!");
+                  },
+                  function(e) {
+                    console.log("Error sending weather info to Pebble!");
+                  });
             }
   );
 }

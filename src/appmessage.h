@@ -1,9 +1,9 @@
 #pragma once
 #include "pebble.h"
   
-enum{
-  STOPID = 0
-};
+// enum{
+//   STOPID = 0,
+// };
 
 void appmessage_init(void);
 

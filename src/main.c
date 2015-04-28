@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "main.h"
 #include "favorites.h"
-#include "appmessage.h"
+// #include "appmessage.h"
 // #include "emergency_conf.c"
 
 static Window* window;
@@ -96,7 +96,7 @@ void init()
     window_set_window_handlers(window, (WindowHandlers) handlers);
     window_stack_push(window, true);
   
-    appmessage_init();
+    //appmessage_init();
 }
  
 void deinit()

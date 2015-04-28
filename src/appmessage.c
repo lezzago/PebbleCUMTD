@@ -23,6 +23,7 @@ void appmessage_init(void) {
 // static void in_dropped_handler(AppMessageResult reason, void *context) {
 // }
 
+
 static void out_sent_handler(DictionaryIterator *sent, void *context) {
 }
 
@@ -30,7 +31,7 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Can't send to phone");
 }
 
-void send_stop(char* val)
+/*void send_stop(char* val)
 {
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
@@ -40,4 +41,4 @@ void send_stop(char* val)
  
     dict_write_end(iter);
     app_message_outbox_send();
-}
+}*/

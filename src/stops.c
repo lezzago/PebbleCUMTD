@@ -1,39 +1,53 @@
 #include <pebble.h>
-#include "stops.h"
+//#include "appmessage.h"
+//#include "stops.h"
 #include "main.h"
+#include "stops.h"
 
- 
+
+static Departure deps[5];
 static Window* window;
 static MenuLayer *menu_layer;
+int num_departures = 5;
 
+
+char * expectedtime(char* s1) {
+  char * ret;
+  ret = malloc((sizeof(char) * 32));
+  ret = "Expected time:";
+  strcat(ret, s1);
+  return ret;
+}
 
 void stops_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
-  switch(cell_index->row)
-    {
-    case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "I am Safe", NULL, NULL);
-        break;
-    case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "Call 911", "Send GPS to Police", NULL);
-        break;
-    }
+  menu_cell_basic_draw(ctx, cell_layer, deps[cell_index->row].headsign, deps[cell_index->row].expected_time, NULL);
 }
 
+static void stops_menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
+  menu_cell_basic_header_draw(ctx, cell_layer, "                CUMTD");
+}
 
- uint16_t stops_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *callback_context)
- {
-   return 2;
- }
+uint16_t stops_num_sections_callback(struct MenuLayer *menu_layer, void *callback_context) {
+  return 1;
+}
 
+int16_t stops_header_height_callback(struct MenuLayer *menu_layer, uint16_t section_index, void *callback_context) {
+  return 16;
+}
 
+uint16_t stops_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *callback_context)
+{
+  return num_departures;
+}
+ 
 void stops_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
   switch(cell_index->row)
    {
      case 0:
       //send_int(0);
-      init();
+      //init();
       //remove this window frmo the stack
       //window_stack_remove(window, false);
       break;
@@ -52,12 +66,15 @@ void stops_window_load(Window *window)
   menu_layer = menu_layer_create(GRect(0, 0, 144, 168 - 16));
 
   //Let it receive clicks
-  //menu_layer_set_click_config_onto_window(menu_layer, window);
+  menu_layer_set_click_config_onto_window(menu_layer, window);
 
   //Give it its callbacks
   MenuLayerCallbacks callbacks = {
+    .draw_header = (MenuLayerDrawHeaderCallback) stops_menu_draw_header_callback,
     .draw_row = (MenuLayerDrawRowCallback) stops_draw_row_callback,
+    .get_num_sections = (MenuLayerGetNumberOfSectionsCallback) stops_num_sections_callback,
     .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback) stops_num_rows_callback,
+    .get_header_height = (MenuLayerGetHeaderHeightCallback) stops_header_height_callback,
     .select_click = (MenuLayerSelectCallback) stops_select_click_callback
   };
   menu_layer_set_callbacks(menu_layer, NULL, callbacks);
@@ -66,42 +83,34 @@ void stops_window_load(Window *window)
   layer_add_child(window_get_root_layer(window), menu_layer_get_layer(menu_layer));
 
 }
-
+ 
 void stops_window_unload(Window *window)
 {
   menu_layer_destroy(menu_layer);
 
 }
 
-void stops_upClickHandler(ClickRecognizerRef recognizer, void *context) {
-  menu_layer_set_selected_next(menu_layer, true, MenuRowAlignCenter, false);
-}
-
-void stops_downClickHandler(ClickRecognizerRef recognizer, void *context) {
-  menu_layer_set_selected_next(menu_layer, false, MenuRowAlignCenter, false);
-}
-
-void stops_selectClickHandler(ClickRecognizerRef recognizer, void *context) {
-  MenuIndex index = menu_layer_get_selected_index(menu_layer);
-  stops_select_click_callback(menu_layer, &index, NULL);
-}
-
-void stops_click_config_provider(ClickRecognizerRef recognizer, void *context) {
-  window_single_click_subscribe(BUTTON_ID_BACK, NULL);
-  window_single_click_subscribe(BUTTON_ID_UP, stops_upClickHandler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, stops_downClickHandler);
-  window_single_click_subscribe(BUTTON_ID_SELECT, stops_selectClickHandler);
-}
-  
-void stops_init()
+void stops_init(Departure departs[], int departure_num)
 {
+
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "START COPYING OVER DEPARTURES");
+    for (int i = 0; i < departure_num; i++) {
+      strcpy(deps[i].headsign, departs[i].headsign);
+      strcpy(deps[i].expected_time, departs[i].expected_time);
+      
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "SIGN: %s", deps[i].headsign);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "TIME: %s", deps[i].expected_time);
+    }
+    num_departures = departure_num;    
+  
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "start init");
     window = window_create();
     WindowHandlers handlers = {
         .load = stops_window_load,
         .unload = stops_window_unload
     };
+
     window_set_window_handlers(window, (WindowHandlers) handlers);
-    window_set_click_config_provider(window, (ClickConfigProvider) stops_click_config_provider);
     window_stack_push(window, true);
 }
  
@@ -109,5 +118,4 @@ void stops_deinit()
 {
     window_destroy(window);
 }
- 
 

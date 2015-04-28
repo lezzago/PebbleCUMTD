@@ -1,12 +1,14 @@
 {
     "appKeys": {
-        "STOPID": 0
+        "KEY_EXPECTED": 2,
+        "KEY_HEADSIGN": 0,
+        "STOPID": 1
     },
     "capabilities": [
         ""
     ],
-    "companyName": "ashish81394@gmail.com",
-    "longName": "CUMTD",
+    "companyName": "Ashish Agrawal",
+    "longName": "Pebble CUMTD",
     "projectType": "native",
     "resources": {
         "media": []
