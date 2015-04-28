@@ -6,6 +6,7 @@
 
 static Departure departs[5];
 int departures_num = 0;
+char * selected_stop;
 
 static Window* window;
 static MenuLayer *menu_layer;
@@ -49,7 +50,7 @@ static void parse(char* str) {
       }
 		}
   }
-  stops_init(departs, departures_num);
+  stops_init(departs, departures_num, selected_stop);
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -238,6 +239,8 @@ void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_inde
    switch(cell_index->row)
    {
      case 0:
+       selected_stop = malloc(sizeof(char) * (strlen("ONENORTH") + 1));
+       strcpy(selected_stop, "ONENORTH");
        send_stop("ONENORTH");
        
        //        caution_init();
@@ -245,11 +248,15 @@ void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_inde
        //window_stack_remove(window, false);
        break;
      case 1:
+       selected_stop = malloc(sizeof(char) * (strlen("GWNMN") + 1));
+       strcpy(selected_stop, "GWNMN");
        send_stop("GWNMN");
        
        //window_stack_remove(window, false);
        break;
      case 2:
+       selected_stop = malloc(sizeof(char) * (strlen("IU") + 1));
+       strcpy(selected_stop, "IU");
        send_stop("IU");
        break;
   }

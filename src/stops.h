@@ -13,6 +13,6 @@ typedef struct dep {
   char expected_time [20];
 } Departure;
   
-void stops_init(Departure departs[], int departure_num);
+void stops_init(Departure departs[], int departure_num, char * stop);
 
 #endif
