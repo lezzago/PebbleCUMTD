@@ -9,6 +9,8 @@ int departures_num = 0;
 char * selected_stop;
 
 static Window* window;
+Window* windowother;
+int removewindow = 0;
 static MenuLayer *menu_layer;
 
 static void parse(char* str) {
@@ -50,7 +52,15 @@ static void parse(char* str) {
       }
 		}
   }
+  if(removewindow == 1) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "REMOVE WINDOW");
+    window_stack_remove(windowother, false);
+  }
+  
   stops_init(departs, departures_num, selected_stop);
+  
+  
+  
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -95,8 +105,10 @@ static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reas
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Can't send to phone");
 }
 
-void send_stop(char* val)
+void send_stop(char* val, int shouldremove, Window* window)
 {
+    removewindow = shouldremove;
+    windowother = window;
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
  
@@ -107,99 +119,6 @@ void send_stop(char* val)
     app_message_outbox_send();
 }
 
-// static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
-//   // Store incoming information
-//   static char headsign_buffer[512];
-//   static char expected_time_buffer[32];
-//   APP_LOG(APP_LOG_LEVEL_DEBUG, "receive callback");
-  
-// //   Tuple *sign = dict_find(iterator, 0);
-// //   Tuple *esttime = dict_find(iterator, 1);
-  
-// //   while (1) {
-// //     if(!sign) {
-// //     APP_LOG(APP_LOG_LEVEL_DEBUG, "NO STOP");
-// //     }
-// //     else {
-// //       char *stopString = sign->value->cstring;
-// //       APP_LOG(APP_LOG_LEVEL_DEBUG, "HAVE STOP: %s", stopString);
-// //     }
-// //     if(!esttime) {
-// //       APP_LOG(APP_LOG_LEVEL_DEBUG, "NO time");
-// //     }
-// //     else {
-// //       APP_LOG(APP_LOG_LEVEL_DEBUG, "HAVE time");
-// //     }
-// //     if(sign && esttime) {
-// //       char *stopString = sign->value->cstring;
-// //       char *codeString = esttime->value->cstring;
-    
-// //       APP_LOG(APP_LOG_LEVEL_DEBUG, "Stop: %s", stopString);
-// //       APP_LOG(APP_LOG_LEVEL_DEBUG, "Time %s", codeString);
-// //     }
-// //     else {
-// //       break;
-// //     }
-// //   }
-  
-  
-//   // Read first item
-//   Tuple *t = dict_read_first(iterator);
-//   //int count = 0;
-//   // For all items
-//   while(t != NULL) {
-//     APP_LOG(APP_LOG_LEVEL_DEBUG, "The value is %s!", t->value->cstring);
-//     // Which key was received?
-//     switch(t->key) {
-//     case KEY_HEADSIGN:
-//       snprintf(headsign_buffer, sizeof(headsign_buffer), "%s", t->value->cstring);
-// //       deps[count].headsign = malloc(sizeof(char) * (strlen(headsign_buffer) + 1));
-// //       strcpy(deps[count].headsign, headsign_buffer);
-//       APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", headsign_buffer);
-//       break;
-//     case KEY_EXPECTED:
-//       snprintf(expected_time_buffer, sizeof(expected_time_buffer), "%s", t->value->cstring);
-// //       deps[count].expected_time = malloc(sizeof(char) * (strlen(expected_time_buffer) + 1));
-// //       strcpy(deps[count].expected_time, expected_time_buffer);
-//       APP_LOG(APP_LOG_LEVEL_DEBUG, "Expected time is %s!", expected_time_buffer);
-//       break;
-//     default:
-//       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
-//       break;
-//     }
-
-//     // Look for next item
-//     t = dict_read_next(iterator);
-//   }
-// //  APP_LOG(APP_LOG_LEVEL_DEBUG, "Count is %d", (int)count);
-  
-//   // Assemble full string and display
-//   //snprintf(weather_layer_buffer, sizeof(weather_layer_buffer), "%s, %s", temperature_buffer, conditions_buffer);
-//   //text_layer_set_text(s_weather_layer, weather_layer_buffer);
-// }
-
-// static void inbox_dropped_callback(AppMessageResult reason, void *context) {
-//   APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
-// }
-
-// static void out_sent_handler(DictionaryIterator *sent, void *context) {
-// }
-
-// static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-// 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Can't send to phone");
-// }
-
-// void send_stop(char* val)
-// {
-//     DictionaryIterator *iter;
-//     app_message_outbox_begin(&iter);
- 
-//     Tuplet value = TupletCString(STOPID, val);
-//     dict_write_tuplet(iter, &value);
- 
-//     dict_write_end(iter);
-//     app_message_outbox_send();
-// }
 
 void favorites_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
@@ -241,7 +160,7 @@ void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_inde
      case 0:
        selected_stop = malloc(sizeof(char) * (strlen("ONENORTH") + 1));
        strcpy(selected_stop, "ONENORTH");
-       send_stop("ONENORTH");
+       send_stop("ONENORTH", 0, NULL);
        
        //        caution_init();
        //remove this window frmo the stack
@@ -250,14 +169,14 @@ void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_inde
      case 1:
        selected_stop = malloc(sizeof(char) * (strlen("GWNMN") + 1));
        strcpy(selected_stop, "GWNMN");
-       send_stop("GWNMN");
+       send_stop("GWNMN", 0, NULL);
        
        //window_stack_remove(window, false);
        break;
      case 2:
        selected_stop = malloc(sizeof(char) * (strlen("IU") + 1));
        strcpy(selected_stop, "IU");
-       send_stop("IU");
+       send_stop("IU", 0, NULL);
        break;
   }
 }
@@ -315,96 +234,3 @@ void favorites_deinit()
 {
     window_destroy(window);
 }
-
-
-/*
- uint16_t favorites_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, void *callback_context)
- {
-   return 2;
- }
-
-
-void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
-{
-  switch(cell_index->row)
-   {
-     case 0:
-      //send_int(0);
-      init();
-      //remove this window frmo the stack
-      //window_stack_remove(window, false);
-      break;
-    case 1:
-      //send_int(3);
-      //emergency_conf_init();
-      //remove this window frmo the stack
-      //window_stack_remove(window, false);
-      break;
-   }
-}
-
-void favorites_window_load(Window *window)
-{
-  //Create it - 12 is approx height of the top bar
-  menu_layer = menu_layer_create(GRect(0, 0, 144, 168 - 16));
-
-  //Let it receive clicks
-  //menu_layer_set_click_config_onto_window(menu_layer, window);
-
-  //Give it its callbacks
-  MenuLayerCallbacks callbacks = {
-    .draw_row = (MenuLayerDrawRowCallback) favorites_draw_row_callback,
-    .get_num_rows = (MenuLayerGetNumberOfRowsInSectionsCallback) favorites_num_rows_callback,
-    .select_click = (MenuLayerSelectCallback) favorites_select_click_callback
-  };
-  menu_layer_set_callbacks(menu_layer, NULL, callbacks);
-
-  //Add to Window
-  layer_add_child(window_get_root_layer(window), menu_layer_get_layer(menu_layer));
-
-}
-
-void favorites_window_unload(Window *window)
-{
-  menu_layer_destroy(menu_layer);
-
-}
-
-void favorites_upClickHandler(ClickRecognizerRef recognizer, void *context) {
-  menu_layer_set_selected_next(menu_layer, true, MenuRowAlignCenter, false);
-}
-
-void favorites_downClickHandler(ClickRecognizerRef recognizer, void *context) {
-  menu_layer_set_selected_next(menu_layer, false, MenuRowAlignCenter, false);
-}
-
-void favorites_selectClickHandler(ClickRecognizerRef recognizer, void *context) {
-  MenuIndex index = menu_layer_get_selected_index(menu_layer);
-  favorites_select_click_callback(menu_layer, &index, NULL);
-}
-
-void favorites_click_config_provider(ClickRecognizerRef recognizer, void *context) {
-  window_single_click_subscribe(BUTTON_ID_BACK, NULL);
-  window_single_click_subscribe(BUTTON_ID_UP, favorites_upClickHandler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, favorites_downClickHandler);
-  window_single_click_subscribe(BUTTON_ID_SELECT, favorites_selectClickHandler);
-}
-  
-void favorites_init()
-{
-    window = window_create();
-    WindowHandlers handlers = {
-        .load = favorites_window_load,
-        .unload = favorites_window_unload
-    };
-    window_set_window_handlers(window, (WindowHandlers) handlers);
-    window_set_click_config_provider(window, (ClickConfigProvider) favorites_click_config_provider);
-    window_stack_push(window, true);
-}
- 
-void favorites_deinit()
-{
-    window_destroy(window);
-}
- 
-*/

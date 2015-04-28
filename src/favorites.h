@@ -10,6 +10,6 @@ enum{
   
 void favorites_init();
 
-void send_stop(char * val);
+void send_stop(char * val, int shouldremove, Window* window);
 
 #endif

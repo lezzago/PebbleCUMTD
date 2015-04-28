@@ -1,6 +1,4 @@
 #include <pebble.h>
-//#include "appmessage.h"
-//#include "stops.h"
 #include "main.h"
 #include "stops.h"
 #include "favorites.h"
@@ -11,105 +9,6 @@ static char * cur_stop;
 static Window* window;
 static MenuLayer *menu_layer;
 int num_departures = 5;
-
-static void parse(char* str) {
-  char sign [50] = "";
-	char time [8] = "";
-  int starttime = 0;
-  int startsign = 0;
-  num_departures = 0;
-  for(; *str; str++) {
-    if(*str == '[')
-		{
-			startsign = 1;
-		}
-		else if(*str == ';')
-		{
-			startsign = 0;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "SIGN: %s", sign);
-      strcpy(deps[num_departures].headsign, sign);
-      strcpy(sign, "");
-			starttime = 1;			
-		}
-		else if(*str == ']')
-		{
-			starttime = 0;
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "TIME: %s", time);
-      strcpy(deps[num_departures].expected_time, time);
-      strcpy(time, "");
-      num_departures++;
-		}
-		else
-		{
-			if(startsign == 1)
-			{
-				strncat(sign, &(*str), 1);
-			}
-      else if(starttime == 1)
-      {
-        strncat(time, &(*str), 1);
-      }
-		}
-  }
-  //remove this window frmo the stack
-  //window_stack_remove(window, false);
-  stops_init(deps, num_departures, cur_stop);
-  
-}
-
-static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
-  // Store incoming information
-  static char headsign_buffer[512];
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "receive callback");
-
-  // Read first item
-  Tuple *t = dict_read_first(iterator);
-  //int count = 0;
-  // For all items
-  while(t != NULL) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "The value is %s!", t->value->cstring);
-    // Which key was received?
-    switch(t->key) {
-    case KEY_HEADSIGN:
-      snprintf(headsign_buffer, sizeof(headsign_buffer), "%s", t->value->cstring);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", headsign_buffer);
-      //parse(headsign_buffer);
-      break;
-    default:
-      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
-      break;
-    }
-
-    // Look for next item
-    t = dict_read_next(iterator);
-  }
-  parse(headsign_buffer);
-}
-
-
-
-static void inbox_dropped_callback(AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
-}
-
-static void out_sent_handler(DictionaryIterator *sent, void *context) {
-}
-
-static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "Can't send to phone");
-}
-
-// void send_stop(char* val)
-// {
-//     DictionaryIterator *iter;
-//     app_message_outbox_begin(&iter);
- 
-//     Tuplet value = TupletCString(STOPID, val);
-//     dict_write_tuplet(iter, &value);
- 
-//     dict_write_end(iter);
-//     app_message_outbox_send();
-// }
 
 
 void stops_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
@@ -136,25 +35,9 @@ uint16_t stops_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, 
  
 void stops_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
-  send_stop(cur_stop);
-  
-  switch(cell_index->row)
-   {
-     case 0:
-      //send_stop(cur_stop);
-      //send_int(0);
-      //init();
-      //remove this window frmo the stack
-      //window_stack_remove(window, false);
-      break;
-    case 1:
-      //send_stop(cur_stop);
-      //send_int(3);
-      //emergency_conf_init();
-      //remove this window frmo the stack
-      //window_stack_remove(window, false);
-      break;
-   }
+  send_stop(cur_stop, 1, window);
+  //remove this window from the stack
+  //window_stack_remove(window, false);
 }
 
 void stops_window_load(Window *window)
