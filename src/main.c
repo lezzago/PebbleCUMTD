@@ -13,10 +13,10 @@ void draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, 
   switch(cell_index->row)
     {
     case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "Find Stops", "Near me" , NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Favorite Stops", NULL, NULL);
         break;
     case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "Favorite Stops", NULL, NULL);
+        menu_cell_basic_draw(ctx, cell_layer, "Find Stops", "Near me", NULL);
         break;
     }
 }
@@ -43,14 +43,10 @@ void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *c
    switch(cell_index->row)
    {
      case 0:
-//        send_int(1);
-//        caution_init();
-       //remove this window frmo the stack
-       //window_stack_remove(window, false);
+       favorites_init();
        break;
      case 1:
-//        send_int(2);
-        favorites_init();
+       //favorites_init();
        //window_stack_remove(window, false);
        break;
    }
