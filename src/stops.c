@@ -2,6 +2,7 @@
 #include "main.h"
 #include "stops.h"
 #include "favorites.h"
+#include "appmessage.h"
 
 
 static Departure deps[5];
@@ -9,6 +10,7 @@ static char * cur_stop;
 static Window* window;
 static MenuLayer *menu_layer;
 int num_departures = 5;
+static int select_allowed = 1;
 
 
 void stops_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
@@ -35,9 +37,11 @@ uint16_t stops_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index, 
  
 void stops_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
-  send_stop(cur_stop, 1, window);
-  //remove this window from the stack
-  //window_stack_remove(window, false);
+  if(select_allowed == 1)
+  {
+    select_allowed = 0;
+    send_stop(cur_stop, 1, window);
+  }
 }
 
 void stops_window_load(Window *window)
@@ -72,7 +76,7 @@ void stops_window_unload(Window *window)
 
 void stops_init(Departure departs[], int departure_num, char * stop)
 {
-
+  select_allowed = 1;
   APP_LOG(APP_LOG_LEVEL_DEBUG, "START COPYING OVER DEPARTURES");
     for (int i = 0; i < departure_num; i++) {
       strcpy(deps[i].headsign, departs[i].headsign);

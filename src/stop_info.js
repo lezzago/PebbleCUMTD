@@ -42,7 +42,7 @@ function getTimes(stop) {
 //                 };
               }
               var dictionary = {
-                "KEY_HEADSIGN": headsign
+                "KEY_HEADSIGN": "0" + headsign
               };
               Pebble.sendAppMessage(dictionary,
                   function(e) {
