@@ -2,6 +2,7 @@
 #include "main.h"
 #include "favorites.h"
 #include "appmessage.h"
+#include "nearby.h"
 // #include "emergency_conf.c"
 
 static Window* window;
@@ -46,6 +47,7 @@ void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *c
        favorites_init();
        break;
      case 1:
+       send_nearby(NULL, 0, NULL);
        //favorites_init();
        //window_stack_remove(window, false);
        break;

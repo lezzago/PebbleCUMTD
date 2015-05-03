@@ -1,16 +1,19 @@
 #include <pebble.h>
+#include "nearby.h"
 #include "appmessage.h"
 #include "stops.h"
 #include "favorites.h"
+
   
 Window* windowother;
 int removewindow = 0;
 static Departure departs[5];
+static Stop stops[5];
 int departures_num = 0;
 char * selected_stop;
 
   
-static void parse(char* str) {
+static void parseTime(char* str) {
   char sign [50] = "";
 	char time [8] = "";
   int starttime = 0;
@@ -55,11 +58,59 @@ static void parse(char* str) {
   }
   
   stops_init(departs, departures_num, selected_stop);
+  allow_select();
+}
+
+static void parseStops(char* str) {
+  char stop_id [16] = "";
+	char stop_name [32] = "";
+  int startid = 0;
+  int startname = 0;
+  departures_num = 0;
+  for(; *str; str++) {
+    if(*str == '[')
+		{
+			startid = 1;
+		}
+		else if(*str == ';')
+		{
+			startid = 0;
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "SIGN: %s", stop_id);
+      strcpy(stops[departures_num].stop_id, stop_id);
+      strcpy(stop_id, "");
+			startname = 1;			
+		}
+		else if(*str == ']')
+		{
+			startname = 0;
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "TIME: %s", stop_name);
+      strcpy(stops[departures_num].stop_name, stop_name);
+      strcpy(stop_name, "");
+      departures_num++;
+		}
+		else
+		{
+			if(startid == 1)
+			{
+				strncat(stop_id, &(*str), 1);
+			}
+      else if(startname == 1)
+      {
+        strncat(stop_name, &(*str), 1);
+      }
+		}
+  }
+  if(removewindow == 1) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "REMOVE WINDOW");
+    window_stack_remove(windowother, false);
+  }
+  
+  nearby_init(stops, departures_num);
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   // Store incoming information
-  static char headsign_buffer[512];
+  static char message_buffer[512];
   APP_LOG(APP_LOG_LEVEL_DEBUG, "receive callback");
 
   // Read first item
@@ -71,10 +122,16 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     // Which key was received?
     switch(t->key) {
     case KEY_HEADSIGN:
-      snprintf(headsign_buffer, sizeof(headsign_buffer), "%s", t->value->cstring);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", headsign_buffer);
+      snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", message_buffer);
+      if(strcmp("0", message_buffer) != 0)
+        parseTime(message_buffer);
       //parse(headsign_buffer);
       break;
+    case KEY_EXPECTED:
+      snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Stops are %s!", message_buffer);
+      parseStops(message_buffer);
     default:
       APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
       break;
@@ -83,7 +140,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     // Look for next item
     t = dict_read_next(iterator);
   }
-  parse(headsign_buffer);
+  
 }
 
 
@@ -121,8 +178,12 @@ void send_nearby(char* val, int shouldremove, Window* window)
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
 
+    Tuplet value = TupletCString(STOPID, "nearby");  
+  
+    dict_write_tuplet(iter, &value);
+    dict_write_end(iter);
     // Add a key-value pair
-    dict_write_uint8(iter, 0, 0);
+    //dict_write_uint8(iter, 0, 0);
 
     // Send the message!
     app_message_outbox_send();

@@ -4,16 +4,17 @@
 #include "favorites.h"
 #include "stops.h"
   
-static Departure deps[5];
-static char * cur_stop;
+static Stop stops[5];
+//static char * cur_stop;
 static Window* window;
 static MenuLayer *menu_layer;
 static int num_stops = 5;
+//static int select_allowed = 1;
 
 
 void nearby_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
-  menu_cell_basic_draw(ctx, cell_layer, deps[cell_index->row].headsign, deps[cell_index->row].expected_time, NULL);
+  menu_cell_basic_draw(ctx, cell_layer, stops[cell_index->row].stop_name, NULL, NULL);
 }
 
 static void nearby_menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
@@ -35,7 +36,8 @@ uint16_t nearby_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index,
  
 void nearby_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
-  send_stop(cur_stop, 1, window);
+  send_stop(stops[cell_index->row].stop_id, 0, NULL);
+  //send_stop(cur_stop, 1, window);
 }
 
 void nearby_window_load(Window *window)
@@ -68,20 +70,20 @@ void nearby_window_unload(Window *window)
 
 }
 
-void nearby_init(Departure departs[], int departure_num, char * stop)
+void nearby_init(Stop stps[], int departures_num)
 {
 
   APP_LOG(APP_LOG_LEVEL_DEBUG, "START COPYING OVER DEPARTURES");
-    for (int i = 0; i < departure_num; i++) {
-      strcpy(deps[i].headsign, departs[i].headsign);
-      strcpy(deps[i].expected_time, departs[i].expected_time);
+    for (int i = 0; i < departures_num; i++) {
+      strcpy(stops[i].stop_id, stps[i].stop_id);
+      strcpy(stops[i].stop_name, stps[i].stop_name);
       
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "SIGN: %s", deps[i].headsign);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "TIME: %s", deps[i].expected_time);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ID: %s", stops[i].stop_id);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP NAme: %s", stops[i].stop_name);
     }
-    cur_stop = malloc(sizeof(char) * (strlen(stop) + 1));
-    strcpy(cur_stop, stop);
-    num_stops = departure_num;    
+    //cur_stop = malloc(sizeof(char) * (strlen(stop) + 1));
+    //strcpy(cur_stop, stop);
+    num_stops = departures_num;    
   
     APP_LOG(APP_LOG_LEVEL_DEBUG, "start init");
     window = window_create();

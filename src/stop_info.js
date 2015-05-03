@@ -12,7 +12,8 @@ var xhrRequest = function (url, type, callback) {
 
 function getTimes(stop) {
   var key = "296a4f7d303b4d269162f3e574858ca3";
-  var url = "https://developer.cumtd.com/api/v2.2/json/GetDeparturesByStop?&key=" + key + "&stop_id=" + stop + "&count=" + 5;
+  var url = "https://developer.cumtd.com/api/v2.2/json/GetDeparturesByStop?&key=" + 
+            key + "&stop_id=" + stop + "&count=" + 5;
   console.log("url: " + url);
 
   
@@ -46,12 +47,69 @@ function getTimes(stop) {
               };
               Pebble.sendAppMessage(dictionary,
                   function(e) {
-                    console.log("Weather info sent to Pebble successfully!");
+                    console.log("Times sent to Pebble successfully!");
                   },
                   function(e) {
-                    console.log("Error sending weather info to Pebble!");
+                    console.log("Error sending departure info to Pebble!");
                   });
             }
+  );
+}
+
+function locationSuccess(pos) {
+  // Construct URL
+  var key = "296a4f7d303b4d269162f3e574858ca3";
+  var url = "https://developer.cumtd.com/api/v2.2/json/GetStopsByLatLon?&key=" + 
+            key + "&lat=" + pos.coords.latitude + "&lon=" + pos.coords.longitude + "&count=" + 5;
+
+  console.log("url: " + url);
+
+  
+  xhrRequest(url, 'GET', 
+            function(responseText) {
+              var output = JSON.parse(responseText);
+              console.log("output: " + JSON.stringify(output));
+             //callback(this.responseText);
+              var len = output.stops.length;
+              var stops = "";
+              //var expected_min = "";
+              for (var i = 0; i < len; i++) {
+                var stopid = output.stops[i].stop_id;
+                var stopname = output.stops[i].stop_name;
+                
+                stops = stops + "[" + stopid + ";" + stopname + "]";
+                
+                console.log("STOPID IS: " + stopid);
+                console.log("STOP NAME IS: " + stopname);
+//                 var dictionary = {
+//                   "KEY_HEADSIGN": headsign,
+//                   "KEY_EXPECTED": expected_min
+//                 };
+              }
+              var dictionary = {
+                "KEY_HEADSIGN": "0",
+                "KEY_EXPECTED": stops
+              };
+              Pebble.sendAppMessage(dictionary,
+                  function(e) {
+                    console.log("Stops sent to Pebble successfully!");
+                  },
+                  function(e) {
+                    console.log("Error sending stops info to Pebble!");
+                  });
+            }
+  );
+}
+
+function locationError(err) {
+  console.log("Error requesting location!");
+}
+
+function getNearBy() {
+  navigator.geolocation.getCurrentPosition(
+    locationSuccess,
+    locationError,
+    {timeout: 15000, maximumAge: 60000}
   );
 }
 
@@ -66,8 +124,15 @@ Pebble.addEventListener('ready',
 Pebble.addEventListener('appmessage', stop_func);
 
 function stop_func(e) {
-  var stop = e.payload.STOPID;
-  console.log("The stop is: " + stop);
-  getTimes(stop);
+  var val = e.payload.STOPID;
+  if(val == "nearby") {
+    console.log("This is getting nearby stops");
+    getNearBy();
+  }
+  else {
+    console.log("The stop is: " + val);
+    getTimes(val);
+  }
+  
 }
 

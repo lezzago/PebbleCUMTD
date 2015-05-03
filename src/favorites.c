@@ -9,6 +9,9 @@ static Window* window;
 static MenuLayer *menu_layer;
 static int select_allowed = 1;
 
+void allow_select() {
+  select_allowed = 1;
+}
 
 void favorites_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
@@ -60,7 +63,7 @@ void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_inde
         send_stop("IU", 0, NULL);
         break;
     }
-    select_allowed = 1;
+    //select_allowed = 1;
   }
 }
 
