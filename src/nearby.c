@@ -9,8 +9,11 @@ static Stop stops[5];
 static Window* window;
 static MenuLayer *menu_layer;
 static int num_stops = 5;
-//static int select_allowed = 1;
+static int select_allowed = 1;
 
+void allow_nearby_select() {
+  select_allowed = 1;
+}
 
 void nearby_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
@@ -36,7 +39,11 @@ uint16_t nearby_num_rows_callback(MenuLayer *menu_layer, uint16_t section_index,
  
 void nearby_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
-  send_stop(stops[cell_index->row].stop_id, 0, NULL);
+  if(select_allowed == 1) {
+    select_allowed = 0;
+    send_stop(stops[cell_index->row].stop_id, 0, NULL);
+  }
+  
   //send_stop(cur_stop, 1, window);
 }
 
@@ -79,7 +86,7 @@ void nearby_init(Stop stps[], int departures_num)
       strcpy(stops[i].stop_name, stps[i].stop_name);
       
       APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ID: %s", stops[i].stop_id);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP NAme: %s", stops[i].stop_name);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP Name: %s", stops[i].stop_name);
     }
     //cur_stop = malloc(sizeof(char) * (strlen(stop) + 1));
     //strcpy(cur_stop, stop);

@@ -3,13 +3,15 @@
 #include "favorites.h"
 #include "main.h"
 #include "stops.h"
+#include "nearby.h"
 
-
+static Stop stops[5];
+static int num_stops = 5;
 static Window* window;
 static MenuLayer *menu_layer;
 static int select_allowed = 1;
 
-void allow_select() {
+void allow_favorites_select() {
   select_allowed = 1;
 }
 
@@ -97,8 +99,19 @@ void favorites_window_unload(Window *window)
 
 }
 
-void favorites_init()
+void favorites_init(Stop stps[], int departures_num)
 {
+    for (int i = 0; i < departures_num; i++) {
+      strcpy(stops[i].stop_id, stps[i].stop_id);
+      strcpy(stops[i].stop_name, stps[i].stop_name);
+      
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ID: %s", stops[i].stop_id);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP Name: %s", stops[i].stop_name);
+    }
+    //cur_stop = malloc(sizeof(char) * (strlen(stop) + 1));
+    //strcpy(cur_stop, stop);
+    num_stops = departures_num;
+  
     select_allowed = 1;
     window = window_create();
     WindowHandlers handlers = {

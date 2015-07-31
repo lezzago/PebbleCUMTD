@@ -15,3 +15,5 @@ void appmessage_init(void);
 void send_stop(char* val, int shouldremove, Window* window);
 
 void send_nearby(char* val, int shouldremove, Window* window);
+
+void send_favorites(char* val, int shouldremove, Window* window);

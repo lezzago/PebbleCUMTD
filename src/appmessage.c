@@ -12,6 +12,10 @@ static Stop stops[5];
 int departures_num = 0;
 char * selected_stop;
 
+void allow_select() {
+  allow_favorites_select();
+  allow_nearby_select();
+}
   
 static void parseTime(char* str) {
   char sign [50] = "";
@@ -61,7 +65,7 @@ static void parseTime(char* str) {
   allow_select();
 }
 
-static void parseStops(char* str) {
+static void parseStops(char* str, int isFav) {
   char stop_id [16] = "";
 	char stop_name [32] = "";
   int startid = 0;
@@ -100,12 +104,11 @@ static void parseStops(char* str) {
       }
 		}
   }
-  if(removewindow == 1) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "REMOVE WINDOW");
-    window_stack_remove(windowother, false);
-  }
   
-  nearby_init(stops, departures_num);
+  if(isFav == 0)
+    nearby_init(stops, departures_num);
+  else
+    favorites_init(stops, departures_num);
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -121,20 +124,26 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     APP_LOG(APP_LOG_LEVEL_DEBUG, "The value is %s!", t->value->cstring);
     // Which key was received?
     switch(t->key) {
-    case KEY_HEADSIGN:
-      snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", message_buffer);
-      if(strcmp("0", message_buffer) != 0)
-        parseTime(message_buffer);
-      //parse(headsign_buffer);
-      break;
-    case KEY_EXPECTED:
-      snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "Stops are %s!", message_buffer);
-      parseStops(message_buffer);
-    default:
-      APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
-      break;
+      case KEY_HEADSIGN:
+        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", message_buffer);
+        if(strcmp("0", message_buffer) != 0)
+          parseTime(message_buffer);
+        //parse(headsign_buffer);
+        break;
+      case KEY_EXPECTED:
+        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Stops are %s!", message_buffer);
+        if(strcmp("0", message_buffer) != 0)
+          parseStops(message_buffer, 0);
+      case KEY_FAVORITE:
+        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "Favorite stops are %s!", message_buffer);
+        if(strcmp("0", message_buffer) != 0)
+          parseStops(message_buffer, 1);
+      default:
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
+        break;
     }
 
     // Look for next item
@@ -179,6 +188,23 @@ void send_nearby(char* val, int shouldremove, Window* window)
     app_message_outbox_begin(&iter);
 
     Tuplet value = TupletCString(STOPID, "nearby");  
+  
+    dict_write_tuplet(iter, &value);
+    dict_write_end(iter);
+    // Add a key-value pair
+    //dict_write_uint8(iter, 0, 0);
+
+    // Send the message!
+    app_message_outbox_send();
+}
+
+void send_favorites(char* val, int shouldremove, Window* window)
+{  
+    // Begin dictionary
+    DictionaryIterator *iter;
+    app_message_outbox_begin(&iter);
+
+    Tuplet value = TupletCString(STOPID, "favorites");  
   
     dict_write_tuplet(iter, &value);
     dict_write_end(iter);

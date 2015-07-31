@@ -44,7 +44,8 @@ void select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *c
    switch(cell_index->row)
    {
      case 0:
-       favorites_init();
+//        favorites_init();
+       send_favorites(NULL, 0, NULL);
        break;
      case 1:
        send_nearby(NULL, 0, NULL);

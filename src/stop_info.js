@@ -113,6 +113,39 @@ function getNearBy() {
   );
 }
 
+function getFavorites() {
+  var ids = ['stop_name1',
+            'stop_name2',
+            'stop_name3',
+            'stop_name4',
+            'stop_name5',
+            'stop_id1',
+            'stop_id2',
+            'stop_id3',
+            'stop_id4',
+            'stop_id5'];
+  var stops = "";
+  for (var key in ids) {
+    var val = localStorage.getItem(key);
+    if(val !== null) {
+      stops += "[" + key + ";" + val + "]";
+    }
+  }
+  var dictionary = {
+    "KEY_HEADSIGN": "0",
+    "KEY_EXPECTED": "0",
+    "KEY_FAVORITE": stops
+  };
+  Pebble.sendAppMessage(dictionary,
+    function(e) {
+      console.log("Favorite stops sent to Pebble successfully!");
+    },
+    function(e) {
+      console.log("Error sending favorite stops info to Pebble!");
+    });
+
+}
+
 // Listen for when the watchface is opened
 Pebble.addEventListener('ready', 
   function(e) {
@@ -128,6 +161,10 @@ function stop_func(e) {
   if(val == "nearby") {
     console.log("This is getting nearby stops");
     getNearBy();
+  }
+  else if(val == "favorites") {
+    console.log("This is going to send favorite stop information");
+    getFavorites();
   }
   else {
     console.log("The stop is: " + val);

@@ -1,11 +1,13 @@
 {
     "appKeys": {
         "KEY_EXPECTED": 2,
+        "KEY_FAVORITE": 3,
         "KEY_HEADSIGN": 0,
         "STOPID": 1
     },
     "capabilities": [
-        ""
+        "location",
+        "configurable"
     ],
     "companyName": "Ashish Agrawal",
     "longName": "Pebble CUMTD",
