@@ -105,10 +105,14 @@ static void parseStops(char* str, int isFav) {
 		}
   }
   
-  if(isFav == 0)
+//   if(isFav == 0) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Executing nearby");
     nearby_init(stops, departures_num);
-  else
-    favorites_init(stops, departures_num);
+//   }
+//   else {
+//     APP_LOG(APP_LOG_LEVEL_DEBUG, "executing favorites");
+//     favorites_init(stops, departures_num);
+//   }
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -122,25 +126,27 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
   // For all items
   while(t != NULL) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "The value is %s!", t->value->cstring);
+    snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "The buffer is is %s!", message_buffer);
     // Which key was received?
     switch(t->key) {
       case KEY_HEADSIGN:
-        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+//         snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Headsign is %s!", message_buffer);
         if(strcmp("0", message_buffer) != 0)
           parseTime(message_buffer);
         //parse(headsign_buffer);
         break;
       case KEY_EXPECTED:
-        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+//         snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Stops are %s!", message_buffer);
         if(strcmp("0", message_buffer) != 0)
           parseStops(message_buffer, 0);
-      case KEY_FAVORITE:
-        snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "Favorite stops are %s!", message_buffer);
-        if(strcmp("0", message_buffer) != 0)
-          parseStops(message_buffer, 1);
+//       case KEY_FAVORITE:
+// //         snprintf(message_buffer, sizeof(message_buffer), "%s", t->value->cstring);
+//         APP_LOG(APP_LOG_LEVEL_DEBUG, "Favorite stops are %s!", message_buffer);
+//         if(strcmp("0", message_buffer) != 0)
+//           parseStops(message_buffer, 1);
       default:
         APP_LOG(APP_LOG_LEVEL_ERROR, "Key %s not recognized!", t->value->cstring);
         break;

@@ -5,8 +5,8 @@
 #include "stops.h"
 #include "nearby.h"
 
-static Stop stops[5];
-static int num_stops = 5;
+static Stop stops_fav[5];
+static int num_stops_fav = 5;
 static Window* window;
 static MenuLayer *menu_layer;
 static int select_allowed = 1;
@@ -17,18 +17,19 @@ void allow_favorites_select() {
 
 void favorites_draw_row_callback(GContext *ctx, Layer *cell_layer, MenuIndex *cell_index, void *callback_context)
 {
-  switch(cell_index->row)
-    {
-    case 0:
-        menu_cell_basic_draw(ctx, cell_layer, "One Illinois North", NULL, NULL);
-        break;
-    case 1:
-        menu_cell_basic_draw(ctx, cell_layer, "Goodwin and Main", NULL, NULL);
-        break;
-    case 2:
-        menu_cell_basic_draw(ctx, cell_layer, "Illni Union", NULL, NULL);
-        break;
-    }
+    menu_cell_basic_draw(ctx, cell_layer, stops_fav[cell_index->row].stop_name, NULL, NULL);
+//   switch(cell_index->row)
+//     {
+//     case 0:
+//         menu_cell_basic_draw(ctx, cell_layer, "One Illinois North", NULL, NULL);
+//         break;
+//     case 1:
+//         menu_cell_basic_draw(ctx, cell_layer, "Goodwin and Main", NULL, NULL);
+//         break;
+//     case 2:
+//         menu_cell_basic_draw(ctx, cell_layer, "Illni Union", NULL, NULL);
+//         break;
+//     }
 }
 
 static void favorites_menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
@@ -50,23 +51,27 @@ uint16_t favorites_num_rows_callback(MenuLayer *menu_layer, uint16_t section_ind
  
 void favorites_select_click_callback(MenuLayer *menu_layer, MenuIndex *cell_index, void *callback_context)
 {
-  if(select_allowed == 1)
-  {
-    select_allowed = 0;
-    switch(cell_index->row)
-    {
-      case 0:
-        send_stop("ONENORTH", 0, NULL);
-        break;
-      case 1:
-        send_stop("GWNMN", 0, NULL);
-        break;
-      case 2:
-        send_stop("IU", 0, NULL);
-        break;
+    if(select_allowed == 1) {
+        select_allowed = 0;
+        send_stop(stops_fav[cell_index->row].stop_id, 0, NULL);
     }
-    //select_allowed = 1;
-  }
+//   if(select_allowed == 1)
+//   {
+//     select_allowed = 0;
+//     switch(cell_index->row)
+//     {
+//       case 0:
+//         send_stop("ONENORTH", 0, NULL);
+//         break;
+//       case 1:
+//         send_stop("GWNMN", 0, NULL);
+//         break;
+//       case 2:
+//         send_stop("IU", 0, NULL);
+//         break;
+//     }
+//     //select_allowed = 1;
+//   }
 }
 
 void favorites_window_load(Window *window)
@@ -102,15 +107,15 @@ void favorites_window_unload(Window *window)
 void favorites_init(Stop stps[], int departures_num)
 {
     for (int i = 0; i < departures_num; i++) {
-      strcpy(stops[i].stop_id, stps[i].stop_id);
-      strcpy(stops[i].stop_name, stps[i].stop_name);
+      strcpy(stops_fav[i].stop_id, stps[i].stop_id);
+      strcpy(stops_fav[i].stop_name, stps[i].stop_name);
       
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ID: %s", stops[i].stop_id);
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP Name: %s", stops[i].stop_name);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP ID: %s", stops_fav[i].stop_id);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "STOP Name: %s", stops_fav[i].stop_name);
     }
     //cur_stop = malloc(sizeof(char) * (strlen(stop) + 1));
     //strcpy(cur_stop, stop);
-    num_stops = departures_num;
+    num_stops_fav = departures_num;
   
     select_allowed = 1;
     window = window_create();

@@ -45,6 +45,11 @@ function getTimes(stop) {
               var dictionary = {
                 "KEY_HEADSIGN": "0" + headsign
               };
+//               var dictionary = {
+//                 "KEY_HEADSIGN": "0" + headsign,
+//                 "KEY_EXPECTED": "0",
+//                 "KEY_FAVORITE": "0"
+//               };
               Pebble.sendAppMessage(dictionary,
                   function(e) {
                     console.log("Times sent to Pebble successfully!");
@@ -86,6 +91,11 @@ function locationSuccess(pos) {
 //                   "KEY_EXPECTED": expected_min
 //                 };
               }
+//               var dictionary = {
+//                 "KEY_HEADSIGN": "0",
+//                 "KEY_EXPECTED": stops,
+//                 "KEY_FAVORITE": "0"
+//               };
               var dictionary = {
                 "KEY_HEADSIGN": "0",
                 "KEY_EXPECTED": stops
@@ -125,16 +135,20 @@ function getFavorites() {
             'stop_id4',
             'stop_id5'];
   var stops = "";
-  for (var key in ids) {
-    var val = localStorage.getItem(key);
-    if(val !== null) {
-      stops += "[" + key + ";" + val + "]";
+  console.log("Start getting favorites");
+  for (var i = 0; i < 5; i++) {
+    console.log("The key of a favorite is: " + ids[i]);
+    var val_name = localStorage.getItem(ids[i]);
+    var val_id = localStorage.getItem(ids[i + 5]);
+    if(val_id !== null) {
+      console.log("STOPID IS: " + val_id);
+      console.log("STOP NAME IS: " + val_name);
+      stops += "[" + val_id + ";" + val_name + "]";
     }
   }
   var dictionary = {
     "KEY_HEADSIGN": "0",
-    "KEY_EXPECTED": "0",
-    "KEY_FAVORITE": stops
+    "KEY_EXPECTED": stops
   };
   Pebble.sendAppMessage(dictionary,
     function(e) {
